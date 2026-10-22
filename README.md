@@ -1,39 +1,59 @@
 # nappm
 
-Nowy projekt w języku Go.
+A new project written in Go.
 
-## Wymagania
+## Requirements
 
-- Go 1.27 lub nowszy
+- Go 1.27 or newer
 
-## Uruchomienie
+## Running
 
 ```sh
 go run .
 ```
 
-## Budowanie
+## Building
 
 ```sh
 make build
-# lub
+# or
 go build -o bin/nappm .
 ```
 
-## Testy
+## Testing
 
 ```sh
 make test
-# lub
+# or
 go test ./...
 ```
 
-## Struktura
+## Node.js test server
+
+A small dependency-free HTTP server is included for testing:
+
+```sh
+node server.js
+```
+
+It listens on `http://127.0.0.1:3000` by default. Use `PORT` and `HOST` to override:
+
+```sh
+PORT=8080 HOST=0.0.0.0 node server.js
+```
+
+Available endpoints:
+
+- `/` — request details as JSON
+- `/health` — `{"status":"ok"}`
+
+## Project structure
 
 ```
 .
-├── main.go        # punkt wejścia aplikacji
-├── main_test.go   # testy
-├── Makefile       # typowe zadania
-└── go.mod         # definicja modułu
+├── main.go        # application entry point
+├── main_test.go   # tests
+├── server.js      # simple Node.js HTTP test server
+├── Makefile       # common tasks
+└── go.mod         # module definition
 ```
