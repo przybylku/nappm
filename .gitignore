@@ -1,0 +1,16 @@
+# Build output
+/bin/
+
+# Test and coverage artifacts
+*.test
+*.out
+coverage.html
+
+# Go workspace files
+go.work
+go.work.sum
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
