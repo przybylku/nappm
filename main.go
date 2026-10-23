@@ -5,8 +5,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"nappm/internal"
+	"os"
 	"os/exec"
-	"time"
+	"os/signal"
+	"syscall"
 )
 
 /*
@@ -16,23 +19,49 @@ import (
  * - Show hardware usage of node processes.
  */
 
-func main() {
+type Process struct {
+	id   int
+	name string
+	pid  int
+}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+func main() {
+	internal.InitDB()
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	c := exec.CommandContext(ctx, "node", "server.js")
+	c.Stderr = os.Stderr
+	c.Cancel = func() error {
+		return c.Process.Signal(syscall.SIGTERM)
+	}
+
 	read, err := c.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
 	}
-	c.Start()
+
+	if err := c.Start(); err != nil {
+		log.Fatalf("start node: %v", err)
+	}
+
+	if _, err := internal.CreateProcess("node server.js", c.Process.Pid); err != nil {
+		log.Printf("save process: %v", err)
+	}
 
 	// TODO: Add PID tracking, writing buffer to log file. Assign pid,name,time,uuid to sqlite db for later killing or reading state.
 
-	buf := bufio.NewReader(read)
-	for {
-		line, _, _ := buf.ReadLine()
-		fmt.Println(string(line))
+	scanner := bufio.NewScanner(read)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		log.Printf("read node output: %v", err)
+	}
+
+	if err := c.Wait(); err != nil && ctx.Err() == nil {
+		log.Printf("node exited: %v", err)
 	}
 }
 

@@ -10,6 +10,9 @@ coverage.html
 go.work
 go.work.sum
 
+# Local database
+test.db
+
 # IDE and OS files
 .idea/
 .vscode/
